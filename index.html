@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>แบบฟอร์มแจ้งเหตุบุคคลอ้างสิทธิ</title>
+<style>
+	body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans Thai",sans-serif;margin:20px;background:#eef3f8}
+	.container{max-width:820px;margin:0 auto;background:#fff;padding:22px;border-radius:10px;box-shadow:0 6px 24px rgba(15,30,60,0.08);border:1px solid #e6eef6}
+	.header{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+	.header img{width:105px;height:105px;object-fit:contain;border-radius:8px;background:#fff;padding:6px;border:1px solid #e0eaf3}
+	.school-title{font-size:25px;font-weight:700;color:#0b3b5c}
+	.school-sub{font-size:16px;color:#3b556b;margin-top:2px}
+	h1{font-size:16px;margin:8px 0 12px;color:#0b3b5c}
+	.field{margin:14px 0}
+	.label{font-weight:600;margin-bottom:6px;display:block;color:#0e3346}
+	.radio-group label{display:block;margin:8px 0;padding:8px;border-radius:8px;cursor:pointer;background:linear-gradient(180deg,#fbfdff,#f7fbff);border:1px solid #e6f0fa}
+	.radio-group input[type="radio"]{margin-right:10px}
+	textarea,input[type="text"]{width:100%;padding:10px;border:1px solid #d6e6f3;border-radius:8px;resize:vertical;background:#fbfdff}
+	.actions{display:flex;gap:12px;align-items:center;margin-top:12px}
+	button{padding:10px 14px;border-radius:8px;border:0;background:#0b63b7;color:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(11,99,183,0.12)}
+	button.secondary{background:#6c757d;box-shadow:none}
+	button:hover{opacity:0.95;transform:translateY(-1px)}
+	pre{background:#f7fbff;padding:14px;border-radius:8px;overflow:auto;border:1px solid #e6f0fa}
+	.note{font-size:13px;color:#55707f;margin-top:6px}
+	@media (max-width:560px){ .header{flex-direction:row;gap:10px} .header img{width:56px;height:56px} }
+</style>
+</head>
+<body>
+<div class="container">
+	<!-- เพิ่มส่วนหัวที่มีโลโก้และชื่อโรงเรียน -->
+	<div class="header" role="banner">
+		<img src="atts1.png" alt="โลโก้ โรงเรียนจ่าอากาศ" />
+		<div>
+			<div class="school-title">โรงเรียนจ่าอากาศ</div>
+			<div class="school-sub">คำเตือน!!!  การคัดเลือกเข้าเป็นนักเรียนจ่าอากาศดำเนินการโดยคณะกรรมการระดับสูงของกองทัพอากาศไม่มีผู้ใดสามารถช่วยเหลือท่านได้ นอกจากใช้ความรู้ ความสามารถของท่านเองหากพบว่าผู้ใดแอบอ้าง ไม่ว่ากรณีใดๆ พร้อมทั้งเรียกร้องผลประโยชน์ตอบแทน ขอโปรดแจ้งโดยตรงที่ 20-5345266 , 02-5343763</div>
+		</div>
+	</div>
+
+	<form id="claimForm">
+		<div class="field">
+			<span class="label">1. ท่านพบบุคคลอ้างสิทธิจำนวนกี่คน? <span style="color:#c00">*</span></span>
+			<div class="radio-group" role="radiogroup" aria-labelledby="q1label">
+				<label><input type="radio" name="q1" value="1 คน" /> 1 คน</label>
+				<label><input type="radio" name="q1" value="2-3 คน" /> 2-3 คน</label>
+				<label><input type="radio" name="q1" value="มากกว่า 3 คน" /> มากกว่า 3 คนขึ้นไป</label>
+			</div>
+		</div>
+
+		<div class="field">
+			<label class="label" for="q2">2. ท่านพอจะทราบชื่อบุคคลเหล่านั้นหรือไม่? (กรอกชื่อหรือข้อมูลที่ทราบ)</label>
+			<textarea id="q2" name="q2" rows="3" placeholder="พิมพ์ชื่อหรือรายละเอียดที่ทราบ"></textarea>
+		</div>
+
+		<div class="field">
+			<label class="label" for="q3">3. แจ้งเหตุเพิ่มเติม</label>
+			<textarea id="q3" name="q3" rows="4" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
+		</div>
+
+		<div class="actions">
+			<button type="submit">ส่งแบบฟอร์ม</button>
+			<button type="button" class="secondary" id="resetBtn">รีเซ็ต</button>
+			<span class="note">ช่องที่มี * ต้องกรอก</span>
+		</div>
+	</form>
+
+	<section style="margin-top:18px">
+		<h2 style="font-size:16px;margin-bottom:8px">ผลลัพธ์ (JSON)</h2>
+		<pre id="output">{}</pre>
+		<div style="margin-top:8px">
+			<button id="downloadBtn" class="secondary">ดาวน์โหลดเป็น .json</button>
+		</div>
+	</section>
+</div>
+
+<script>
+(function(){
+	const form = document.getElementById('claimForm');
+	const output = document.getElementById('output');
+	const downloadBtn = document.getElementById('downloadBtn');
+	const resetBtn = document.getElementById('resetBtn');
+
+	function getFormData(){
+		const formData = new FormData(form);
+		return {
+			question1: formData.get('q1') || null,
+			question2: formData.get('q2')?.trim() || '',
+			question3: formData.get('q3')?.trim() || '',
+			submittedAt: new Date().toISOString()
+		};
+	}
+
+	async function sendEmail(data) {
+		try {
+			const response = await fetch('https://your-backend-endpoint/send-email', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					to: 'fluk2545t@gmail.com',
+					subject: 'แบบฟอร์มแจ้งเหตุบุคคลอ้างสิทธิ',
+					body: data
+				})
+			});
+			if (!response.ok) throw new Error('Failed to send email');
+			alert('ส่งอีเมลสำเร็จ');
+		} catch (error) {
+			console.error('Error sending email:', error);
+			alert('เกิดข้อผิดพลาดในการส่งอีเมล');
+		}
+	}
+
+	form.addEventListener('submit', async function(e){
+		e.preventDefault();
+		const data = getFormData();
+		if(!data.question1){
+			alert('กรุณาเลือกคำตอบข้อที่ 1');
+			return;
+		}
+		const json = JSON.stringify(data, null, 2);
+		output.textContent = json;
+		// เก็บสำรองใน localStorage ชั่วคราว
+		try{ localStorage.setItem('claim_form_last', json); }catch(e){}
+		alert('ส่งแบบฟอร์มเรียบร้อย (ข้อมูลแสดงด้านล่าง)');
+		await sendEmail(json); // ส่งอีเมล
+	});
+
+	resetBtn.addEventListener('click', function(){
+		if(confirm('ต้องการรีเซ็ตแบบฟอร์มหรือไม่?')) {
+			form.reset();
+			output.textContent = '{}';
+			try{ localStorage.removeItem('claim_form_last'); }catch(e){}
+		}
+	});
+
+	downloadBtn.addEventListener('click', function(){
+		const text = output.textContent || '{}';
+		const blob = new Blob([text], {type:'application/json;charset=utf-8'});
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = 'claim_form_' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.json';
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		URL.revokeObjectURL(url);
+	});
+
+	// โหลดข้อมูลล่าสุดถ้ามี
+	try{
+		const last = localStorage.getItem('claim_form_last');
+		if(last) output.textContent = last;
+	}catch(e){}
+})();
+</script>
+</body>
+</html>
