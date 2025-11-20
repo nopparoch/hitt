@@ -101,11 +101,14 @@
 					body: data
 				})
 			});
-			if (!response.ok) throw new Error('Failed to send email');
+			if (!response.ok) {
+				const errorText = await response.text(); // อ่านข้อความข้อผิดพลาดจาก backend
+				throw new Error(`Failed to send email: ${errorText}`);
+			}
 			alert('ส่งอีเมลสำเร็จ');
 		} catch (error) {
 			console.error('Error sending email:', error);
-			alert('เกิดข้อผิดพลาดในการส่งอีเมล');
+			alert(`เกิดข้อผิดพลาดในการส่งอีเมล: ${error.message}`);
 		}
 	}
 
